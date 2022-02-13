@@ -12,6 +12,18 @@ import (
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 )
 
+func showHome(w http.ResponseWriter, r *http.Request) {
+	w.Write([]byte(`
+            <html>
+            <head><title>Volume Exporter Metrics</title></head>
+            <body>
+            <h2>metrics available at /metrics path</h2>
+            <p><a href='` + "/metrics" + `'>Metrics</a></p>
+            </body>
+            </html>
+        `))
+}
+
 type fileCountCollector struct {
 	fileCountMetric *prometheus.Desc
 }
@@ -59,13 +71,13 @@ func checkFileCount(path string) (result []byte, err error) {
 }
 
 func main() {
-
 	mux := http.NewServeMux()
 
 	fileCount := newFileCountCollector()
 	prometheus.MustRegister(fileCount)
 
 	mux.Handle("/metrics", promhttp.Handler())
+	mux.HandleFunc("/", showHome)
 
 	log.Println("Listening...")
 	http.ListenAndServe(":3000", mux)
