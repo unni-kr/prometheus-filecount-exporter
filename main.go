@@ -32,7 +32,7 @@ func newFileCountCollector() *fileCountCollector {
 	return &fileCountCollector{
 		fileCountMetric: prometheus.NewDesc("ls_metric",
 			"Shows the count of files the given path",
-			nil, nil),
+			[]string{"dir_path"}, nil),
 	}
 }
 
@@ -41,14 +41,14 @@ func (collector *fileCountCollector) Describe(ch chan<- *prometheus.Desc) {
 }
 
 func (collector *fileCountCollector) Collect(ch chan<- prometheus.Metric) {
-	path := "."
-	fileCountResult, _ := checkFileCount(path)
+	dir_path := "."
+	fileCountResult, _ := checkFileCount(dir_path)
 	fileCountResultString := strings.TrimSpace(string(fileCountResult))
 	metricValue, err := strconv.ParseFloat(fileCountResultString, 64)
 	if err != nil {
 		log.Fatal(err)
 	}
-	m1 := prometheus.MustNewConstMetric(collector.fileCountMetric, prometheus.GaugeValue, metricValue)
+	m1 := prometheus.MustNewConstMetric(collector.fileCountMetric, prometheus.GaugeValue, metricValue, dir_path)
 	m1 = prometheus.NewMetricWithTimestamp(time.Now(), m1)
 	ch <- m1
 }
